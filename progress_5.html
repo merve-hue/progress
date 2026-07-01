@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Progress — Hedef Takip</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D12;--surface:#16161E;--card:#1C1C26;--border:#2C2C3A;
+  --text:#EEEEF5;--muted:#6B6B85;
+  --u1:#818CF8;--u2:#FB923C;--danger:#F87171;--success:#4ADE80;
+  --accent:#818CF8;
+  --deco-opacity:0;
+}
+
+/* ── Pastel themes ── */
+[data-theme="pink"]{
+  --bg:#FFF5F8;--surface:#FFEAF1;--card:#FFFFFF;--border:#FBD3E2;
+  --text:#5A3A45;--muted:#B98A9B;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#EF6F8E;--success:#86D9A8;
+  --deco-color:#F9A8C9;--deco-opacity:1;
+  --header-bg:#F5C8D8;
+}
+[data-theme="blue"]{
+  --bg:#F2F8FF;--surface:#E6F2FF;--card:#FFFFFF;--border:#C9E2FB;
+  --text:#33475A;--muted:#7C9AB3;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#EF7B6F;--success:#5FC79E;
+  --deco-color:#9FCBF0;--deco-opacity:1;
+  --header-bg:#C4DCF5;
+}
+[data-theme="green"]{
+  --bg:#F3FAF3;--surface:#E8F5E8;--card:#FFFFFF;--border:#CDEACB;
+  --text:#3A4A36;--muted:#8AAD81;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#E0786E;--success:#5FC79E;
+  --deco-color:#A8D8A0;--deco-opacity:1;
+  --header-bg:#C8E6C4;
+}
+[data-theme="yellow"]{
+  --bg:#FFFBF0;--surface:#FFF6DE;--card:#FFFFFF;--border:#FAE7B0;
+  --text:#5A4A2A;--muted:#BFA363;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#E2776B;--success:#7CBE7C;
+  --deco-color:#F7D680;--deco-opacity:1;
+  --header-bg:#F5E09A;
+}
+[data-theme="light"]{
+  --bg:#FAFAFA;--surface:#F2F2F2;--card:#FFFFFF;--border:#E2E2E2;
+  --text:#222222;--muted:#888888;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#E05252;--success:#4CAF7A;
+  --deco-opacity:0;
+  --header-bg:#E0E0E0;
+}
+[data-theme="dark"]{
+  --bg:#0D0D12;--surface:#16161E;--card:#1C1C26;--border:#2C2C3A;
+  --text:#EEEEF5;--muted:#6B6B85;
+  --u1:#8B1A3A;--u2:#C9962A;--danger:#F87171;--success:#4ADE80;
+  --deco-opacity:0;
+  --header-bg:#0A0A0F;
+}
+
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:15px;font-weight:600;line-height:1.5;min-height:100dvh;-webkit-tap-highlight-color:transparent;transition:background .3s,color .3s}
+#app{max-width:480px;margin:0 auto;position:relative}
+
+/* ── Decorative corner motifs ── */
+.deco{position:fixed;pointer-events:none;opacity:var(--deco-opacity);transition:opacity .4s;z-index:1;color:var(--deco-color,transparent)}
+.deco svg{display:block}
+.deco-tl{top:0;left:0}
+.deco-br{bottom:0;right:0}
+.deco-tr{top:54px;right:0;opacity:calc(var(--deco-opacity) * .6)}
+
+/* ── Theme picker ── */
+.theme-picker{display:flex;gap:6px;align-items:center}
+.theme-dot{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .15s,border-color .15s;padding:0}
+.theme-dot:active{transform:scale(.9)}
+.theme-dot.active{border-color:var(--text)}
+.theme-menu{position:absolute;top:46px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;display:none;gap:8px;z-index:150;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.theme-menu.open{display:flex}
+#setup-screen{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.setup-box{width:100%;max-width:360px}
+.setup-logo{text-align:center;margin-bottom:36px}
+.setup-logo .icon{font-size:48px;display:block;margin-bottom:10px}
+.setup-logo h1{font-size:28px;font-weight:900;letter-spacing:-1px}
+.setup-logo p{color:var(--muted);font-size:14px;margin-top:4px}
+.user-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.user-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+#header{position:sticky;top:0;z-index:100;background:var(--header-bg,var(--surface));backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;font-weight:800}
+.header-logo{font-weight:900;font-size:17px;letter-spacing:-.5px}
+.user-switcher{display:flex;gap:3px;background:var(--surface);border-radius:10px;padding:3px}
+.user-btn{padding:5px 13px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .18s;background:transparent;color:var(--muted)}
+.user-btn.active{color:#fff}
+#content{padding:16px 16px 88px}
+#nav{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:var(--header-bg,var(--surface));border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,10px)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 0;position:relative}
+.nav-icon{font-size:19px;line-height:1}
+.nav-label{font-size:10px;color:var(--muted);font-weight:500}
+.nav-btn.active .nav-label{font-weight:700}
+.nav-active-bar{width:22px;height:2px;border-radius:1px;margin-top:1px}
+.nav-badge{position:absolute;top:1px;right:16%;background:var(--danger);color:#fff;border-radius:99px;font-size:9px;font-weight:700;padding:1px 5px;line-height:1.4}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.card-title{font-weight:700;font-size:15px;margin-bottom:12px}
+label.field{display:block;margin-bottom:10px}
+label.field span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
+input.inp,select.inp,textarea.inp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input.inp:focus,select.inp:focus,textarea.inp:focus{border-color:var(--accent)}
+textarea.inp{resize:none;min-height:72px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:11px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;transition:opacity .15s,transform .1s;user-select:none}
+.btn:active{opacity:.75;transform:scale(.97)}
+.btn-sm{padding:7px 13px;font-size:13px;border-radius:9px}
+.btn-full{width:100%}
+.btn-outline{background:transparent!important}
+.ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:800;font-size:14px;text-align:center;line-height:1}
+.bar-track{height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.period-tabs{display:flex;gap:6px;margin-bottom:14px}
+.period-tab{flex:1;padding:8px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--muted);transition:all .15s}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:12px;margin-bottom:8px;background:var(--card);border:1px solid var(--border)}
+.todo-check{width:22px;height:22px;border-radius:7px;border:2px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s}
+.todo-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;margin-left:auto;padding:0 2px}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600}
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(20px);background:#222230;border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:200}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.motiv-msg{padding:13px 14px;border-radius:13px;margin-bottom:10px;border:1px solid var(--border);background:var(--card)}
+.bar-chart{display:flex;gap:6px;align-items:flex-end;height:80px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-col-fill{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .35s}
+.bar-col-lbl{font-size:10px;color:var(--muted)}
+.advice-item{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border-radius:12px;margin-bottom:8px;background:var(--card);border:1px solid var(--border)}
+.advice-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;margin-left:auto;padding:0 2px;flex-shrink:0}
+.cat-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{padding:6px 14px;border-radius:99px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;transition:all .15s;font-family:inherit}
+.upcoming-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;background:#F59E0B20;color:#F59E0B;border:1px solid #F59E0B40;font-weight:600;margin-left:6px}
+/* Sync indicator */
+#sync-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s,opacity .3s;z-index:999;opacity:0}
+#sync-bar.loading{opacity:1;transform:scaleX(.7);transition:transform 1s}
+#sync-bar.done{opacity:1;transform:scaleX(1);transition:transform .2s}
+#sync-status{position:fixed;top:8px;right:12px;font-size:11px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;border-radius:99px;padding:3px 10px;background:var(--surface);border:1px solid var(--border)}
+.row{display:flex;align-items:center}
+.row-between{display:flex;align-items:center;justify-content:space-between}
+.gap-8{gap:8px}.gap-10{gap:10px}.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mt-8{margin-top:8px}
+.col-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{color:var(--muted);text-align:center;padding:28px 0;font-size:14px}
+.section-title{font-weight:800;font-size:17px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<!-- Decorative corner motifs -->
+<div class="deco deco-tl">
+  <svg width="110" height="110" viewBox="0 0 110 110" fill="none">
+    <path d="M10 100 C10 70 20 50 15 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+    <path d="M15 20 C20 30 30 28 33 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <path d="M15 40 C24 45 30 40 30 32" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <path d="M13 60 C5 63 2 70 8 76" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <circle cx="15" cy="18" r="6" fill="currentColor" opacity=".55"/>
+    <circle cx="33" cy="16" r="3.5" fill="currentColor" opacity=".4"/>
+    <circle cx="9" cy="12" r="3.5" fill="currentColor" opacity=".4"/>
+    <circle cx="22" cy="8" r="3" fill="currentColor" opacity=".4"/>
+  </svg>
+</div>
+<div class="deco deco-br">
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+    <path d="M110 20 C110 50 100 70 105 100" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+    <path d="M105 100 C98 92 88 94 86 104" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <path d="M104 80 C95 75 88 80 89 88" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <path d="M107 60 C115 57 118 50 112 44" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+    <circle cx="105" cy="102" r="6" fill="currentColor" opacity=".55"/>
+    <circle cx="87" cy="104" r="3.5" fill="currentColor" opacity=".4"/>
+    <circle cx="111" cy="108" r="3.5" fill="currentColor" opacity=".4"/>
+    <circle cx="98" cy="112" r="3" fill="currentColor" opacity=".4"/>
+  </svg>
+</div>
+<div class="deco deco-tr">
+  <svg width="70" height="70" viewBox="0 0 70 70" fill="none">
+    <path d="M65 5 C50 8 40 18 38 30" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+    <circle cx="38" cy="28" r="4.5" fill="currentColor" opacity=".4"/>
+  </svg>
+</div>
+
+<div id="sync-bar"></div>
+<div id="sync-status"></div>
+<div id="app">
+  <div id="setup-screen">
+    <div class="setup-box">
+      <div class="setup-logo">
+        <span class="icon">🎯</span>
+        <h1>Progress</h1>
+        <p>İki kişilik hedef & ilerleme takibi</p>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;text-align:center">Sen kimsin?</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-full who-btn" data-name="Zehra" style="background:#8B1A3A;color:#fff;font-size:16px;padding:14px">Zehra</button>
+          <button class="btn btn-full who-btn" data-name="Merve" style="background:#C9962A;color:#fff;font-size:16px;padding:14px">Merve</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-app" style="display:none">
+    <div id="header">
+      <div class="row gap-8">
+        <div class="header-logo" id="header-logo">🎯 <span id="my-name-label"></span></div>
+        <div id="partner-pill" class="row gap-8" style="background:var(--surface);border-radius:99px;padding:4px 10px 4px 8px;font-size:12px;color:var(--muted)">
+          <span id="partner-status-dot" style="font-size:9px">🔴</span>
+          <span id="partner-name-label"></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="online-dot" title="Bağlantı durumu" style="font-size:10px">🟢</span>
+        <button id="theme-toggle-btn" title="Renk teması" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px">🎨</button>
+      </div>
+    </div>
+    <div class="theme-menu" id="theme-menu">
+      <button class="theme-dot" data-theme="pink"   style="background:#F9B8D3" title="Pembe"></button>
+      <button class="theme-dot" data-theme="blue"   style="background:#A9D4F7" title="Mavi"></button>
+      <button class="theme-dot" data-theme="green"  style="background:#B7E2B2" title="Yeşil"></button>
+      <button class="theme-dot" data-theme="yellow" style="background:#FBE49A" title="Sarı"></button>
+      <button class="theme-dot" data-theme="light"  style="background:#FFFFFF;border-color:#ddd" title="Beyaz"></button>
+      <button class="theme-dot" data-theme="dark"   style="background:#18181F" title="Siyah"></button>
+    </div>
+    <div id="content"></div>
+    <nav id="nav">
+      <button class="nav-btn" id="nb-dashboard" onclick="setTab('dashboard')">
+        <span class="nav-icon">⚡</span><span class="nav-label">Ana</span>
+        <div class="nav-active-bar" id="nbar-dashboard"></div>
+      </button>
+      <button class="nav-btn" id="nb-goals" onclick="setTab('goals')">
+        <span class="nav-icon">🎯</span><span class="nav-label">Hedefler</span>
+        <div class="nav-active-bar" id="nbar-goals"></div>
+      </button>
+      <button class="nav-btn" id="nb-todos" onclick="setTab('todos')">
+        <span class="nav-icon">✅</span><span class="nav-label">Görevler</span>
+        <div class="nav-active-bar" id="nbar-todos"></div>
+      </button>
+      <button class="nav-btn" id="nb-stats" onclick="setTab('stats')">
+        <span class="nav-icon">📊</span><span class="nav-label">İstatistik</span>
+        <div class="nav-active-bar" id="nbar-stats"></div>
+      </button>
+      <button class="nav-btn" id="nb-motivation" onclick="setTab('motivation')">
+        <span class="nav-icon">💬</span><span class="nav-label">Motivasyon</span>
+        <div class="nav-active-bar" id="nbar-motivation"></div>
+        <span class="nav-badge" id="motiv-badge" style="display:none"></span>
+      </button>
+      <button class="nav-btn" id="nb-advice" onclick="setTab('advice')">
+        <span class="nav-icon">💡</span><span class="nav-label">Tavsiye</span>
+        <div class="nav-active-bar" id="nbar-advice"></div>
+      </button>
+    </nav>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── Supabase config ───────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://wekxgogjntktcwgvclpx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indla3hnb2dqbnRrdGN3Z3ZjbHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NDY1OTMsImV4cCI6MjA5ODMyMjU5M30.cbIKgbMudW0pj0g3qOjMWfyW20P1tWq70fgDmxlfM-4';
+
+// ── Supabase helpers ──────────────────────────────────────────────────────────
+async function dbGet() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/progress_data?id=eq.state&select=data`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  if (!res.ok) throw new Error('DB okuma hatası');
+  const rows = await res.json();
+  return rows[0]?.data || null;
+}
+
+async function dbSet(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/progress_data?id=eq.state`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ data, updated_at: new Date().toISOString() })
+  });
+  if (!res.ok) throw new Error('DB yazma hatası');
+}
+
+// Realtime polling — her 8 saniyede bir senkronize et
+let pollInterval = null;
+let lastSyncHash = '';
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(async () => {
+    try {
+      const remote = await dbGet();
+      if (!remote) return;
+      const remoteHash = JSON.stringify(remote);
+      if (remoteHash !== lastSyncHash) {
+        lastSyncHash = remoteHash;
+        const myActive = state.active;
+        const merged = mergeStates(state, remote);
+        state = merged;
+        state.active = myActive; // kendi profilim sabit kalsın
+        saveLocal();
+        render();
+        refreshHeader();
+        showSyncDot('🟢', 'Senkronize edildi');
+      }
+    } catch(e) {
+      showSyncDot('🔴', 'Bağlantı yok');
+    }
+  }, 8000);
+}
+
+function mergeStates(local, remote) {
+  // Remote is source of truth; but keep local names if remote names empty
+  if (!remote.names || !remote.names[0]) return local;
+  return remote;
+}
+
+function showSyncDot(dot, msg) {
+  const el = document.getElementById('online-dot');
+  if (el) el.textContent = dot;
+}
+
+// ── Sync UI ───────────────────────────────────────────────────────────────────
+function showSyncBar() {
+  const b = document.getElementById('sync-bar');
+  b.classList.remove('done'); b.classList.add('loading');
+}
+function hideSyncBar() {
+  const b = document.getElementById('sync-bar');
+  b.classList.remove('loading'); b.classList.add('done');
+  setTimeout(() => b.classList.remove('done'), 600);
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active', d.dataset.theme===t));
+}
+function initTheme(){
+  const saved = localStorage.getItem('progress_theme') || (state.theme || 'dark');
+  applyTheme(saved);
+  document.getElementById('theme-toggle-btn').onclick = (e)=>{
+    e.stopPropagation();
+    document.getElementById('theme-menu').classList.toggle('open');
+  };
+  document.querySelectorAll('.theme-dot').forEach(dot=>{
+    dot.onclick = async ()=>{
+      const t = dot.dataset.theme;
+      applyTheme(t);
+      localStorage.setItem('progress_theme', t);
+      state.theme = t;
+      document.getElementById('theme-menu').classList.remove('open');
+      await save();
+    };
+  });
+  document.addEventListener('click', (e)=>{
+    const menu = document.getElementById('theme-menu');
+    if(menu && !menu.contains(e.target) && e.target.id!=='theme-toggle-btn') menu.classList.remove('open');
+  });
+}
+
+
+const COLORS = ['#8B1A3A','#C9962A']; // Zehra: vişne çürüğü, Merve: gold sarı
+const CATS = ['Sağlık','Kariyer','Eğitim','Spor','Finans','Kişisel','Manevi','Diğer'];
+const ADVICE_CATS = ['Film/Dizi','Kitap','Makale','Şarkı','Diğer'];
+const FREQ_LABELS = {daily:'Her Gün',weekly:'Her Hafta',monthly:'Her Ay',once:'Tek Seferlik'};
+const QUICK_MSGS = ['Harika gidiyorsun! 💪','Bu hafta çok ilerleme kaydedeceksin!','Pes etme, hedefe yakınsın! 🎯','Seninle gurur duyuyorum ✨','Bugün harika bir gün olacak!','Her adım seni hedefe yaklaştırıyor 🚀'];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = {
+  names: ['',''], active: 0, tab: 'dashboard', todoPeriod: 'day', adviceCat: 'Film/Dizi', theme: 'dark',
+  users: [
+    {goals:[],todos:[],motivations:[],advice:[]},
+    {goals:[],todos:[],motivations:[],advice:[]}
+  ]
+};
+
+function saveLocal() { try { localStorage.setItem('progress_v3', JSON.stringify(state)); } catch(e){} }
+function loadLocal() {
+  try {
+    const r = localStorage.getItem('progress_v3');
+    if (r) { state = JSON.parse(r); return true; }
+  } catch(e){}
+  return false;
+}
+
+async function save() {
+  saveLocal();
+  showSyncBar();
+  try {
+    await dbSet(state);
+    lastSyncHash = JSON.stringify(state);
+    showSyncDot('🟢', 'Kaydedildi');
+  } catch(e) {
+    showSyncDot('🔴', 'Çevrimdışı — yerel kaydedildi');
+    toast('⚠️ Çevrimdışı — yerel kaydedildi');
+  }
+  hideSyncBar();
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2,9); }
+function today() { return new Date().toISOString().slice(0,10); }
+function weekStart() {
+  const d = new Date(), day = d.getDay(), diff = day===0?6:day-1;
+  d.setDate(d.getDate()-diff); return d.toISOString().slice(0,10);
+}
+function monthStart() { return new Date().toISOString().slice(0,8)+'01'; }
+function fmtDate(s) { if(!s)return ''; try{return new Date(s+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;} }
+
+function goalPct(g) {
+  if(!g.target||!g.progress?.length)return 0;
+  return Math.min(100,Math.round(g.progress.reduce((s,p)=>s+p.value,0)/g.target*100));
+}
+function isUpcoming(g) { return g.startDate && g.startDate > today(); }
+
+function isTodoDoneForPeriod(t) {
+  if(t.frequency==='once')return t.done;
+  return (t.doneKeys||[]).includes(periodKey(t.frequency));
+}
+function periodKey(freq) {
+  if(freq==='daily')return today();
+  if(freq==='weekly')return weekStart();
+  if(freq==='monthly')return monthStart();
+  return today();
+}
+function filterTodos(todos, period) {
+  const n=today(),ws=weekStart(),ms=monthStart();
+  return todos.filter(t=>{
+    if(t.frequency==='once'){
+      if(period==='day')return t.date===n;
+      if(period==='week')return t.date>=ws;
+      if(period==='month')return t.date>=ms;
+    } else {
+      if(period==='day')return t.frequency==='daily';
+      if(period==='week')return t.frequency==='weekly';
+      if(period==='month')return t.frequency==='monthly';
+    }
+    return true;
+  });
+}
+function periodPct(uid) {
+  const u = state.users[uid], period = state.todoPeriod;
+  const ts = filterTodos(u.todos, period);
+  const done = ts.filter(t=>isTodoDoneForPeriod(t)).length;
+  const todoPct = ts.length?Math.round(done/ts.length*100):0;
+  const ag = u.goals.filter(g=>!isUpcoming(g));
+  const gAvg = ag.length?Math.round(ag.map(goalPct).reduce((a,b)=>a+b,0)/ag.length):0;
+  if(!ag.length&&!ts.length)return 0;
+  if(!ag.length)return todoPct;
+  if(!ts.length)return gAvg;
+  return Math.round((todoPct+gAvg)/2);
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── SVG helpers ───────────────────────────────────────────────────────────────
+function ring(pct,color,size=64,stroke=6){
+  const r=(size-stroke)/2,circ=2*Math.PI*r,dash=(pct/100)*circ;
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#2C2C3A" stroke-width="${stroke}"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/></svg>`;
+}
+function ringWidget(pct,color,size=64,ls=14){
+  return `<div class="ring-wrap" style="width:${size}px;height:${size}px">${ring(pct,color,size)}
+    <div class="ring-label" style="font-size:${ls}px;color:${color}">${pct}%</div></div>`;
+}
+function bar(pct,color){ return `<div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>`; }
+function badge(label,color){ return `<span class="badge" style="background:${color}20;color:${color};border:1px solid ${color}40">${label}</span>`; }
+function freqBadge(freq){
+  if(!freq||freq==='once')return '';
+  const c={daily:'#34D399',weekly:'#60A5FA',monthly:'#C084FC'}[freq]||'#6B6B85';
+  return `<span class="badge" style="background:${c}20;color:${c};border:1px solid ${c}40;margin-left:4px">${FREQ_LABELS[freq]||freq}</span>`;
+}
+
+// ── Setup ─────────────────────────────────────────────────────────────────────
+const FIXED_NAMES = ['Zehra','Merve'];
+
+document.querySelectorAll('.who-btn').forEach(btn=>{
+  btn.onclick = async () => {
+    const myName = btn.dataset.name;
+    document.querySelectorAll('.who-btn').forEach(b=>b.disabled=true);
+    btn.textContent='Yükleniyor…';
+    try {
+      const remote = await dbGet();
+      if (remote && remote.names && remote.names[0]) {
+        state = normalizeState(remote);
+      } else {
+        state.names = FIXED_NAMES.slice();
+        await dbSet(state);
+      }
+      lastSyncHash = JSON.stringify(state);
+    } catch(e) {
+      state.names = FIXED_NAMES.slice();
+      toast('⚠️ Sunucuya bağlanılamadı, çevrimdışı çalışıyor');
+    }
+    state.active = state.names.indexOf(myName) >= 0 ? state.names.indexOf(myName) : 0;
+    localStorage.setItem('progress_myname', myName);
+    // mark lastSeen
+    if(!state.users[state.active].lastSeen) state.users[state.active].lastSeen = null;
+    state.users[state.active].lastSeen = new Date().toISOString();
+    saveLocal();
+    try { await dbSet(state); lastSyncHash = JSON.stringify(state); } catch(e){}
+    document.getElementById('setup-screen').style.display='none';
+    document.getElementById('main-app').style.display='block';
+    initApp();
+  };
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initApp(){
+  initTheme();
+  refreshHeader();
+  setTab(state.tab||'dashboard');
+  startPolling();
+  // heartbeat: keep lastSeen fresh while app is open
+  setInterval(async ()=>{
+    state.users[state.active].lastSeen = new Date().toISOString();
+    saveLocal();
+    try { await dbSet(state); } catch(e){}
+    refreshHeader();
+  }, 5*60*1000);
+}
+
+function isPartnerActive(){
+  const partner = state.users[1-state.active];
+  if(!partner || !partner.lastSeen) return false;
+  const diffMs = Date.now() - new Date(partner.lastSeen).getTime();
+  return diffMs < 24*60*60*1000; // 24 saat
+}
+
+function refreshHeader(){
+  const a=state.active,c=COLORS[a];
+  document.getElementById('header-logo').style.color=c;
+  document.getElementById('my-name-label').textContent = state.names[a];
+  document.getElementById('partner-name-label').textContent = state.names[1-a];
+  const active = isPartnerActive();
+  document.getElementById('partner-status-dot').textContent = active ? '🟢' : '🔴';
+  document.getElementById('partner-pill').title = active ? 'Son 24 saat içinde aktifti' : '24 saatten uzun süredir görünmedi';
+  updateBadge();
+}
+function updateBadge(){
+  const n=state.users[state.active].motivations.filter(m=>!m.read).length;
+  const el=document.getElementById('motiv-badge');
+  if(el){if(n>0){el.textContent=n;el.style.display='block';}else el.style.display='none';}
+}
+function setTab(tab){
+  state.tab=tab;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-active-bar').forEach(b=>b.style.background='transparent');
+  document.querySelectorAll('.nav-label').forEach(l=>l.style.color='');
+  const nb=document.getElementById('nb-'+tab);
+  if(nb){nb.classList.add('active');document.getElementById('nbar-'+tab).style.background=COLORS[state.active];nb.querySelector('.nav-label').style.color=COLORS[state.active];}
+  render();
+}
+function render(){
+  const el=document.getElementById('content');
+  const a=state.active,color=COLORS[a];
+  document.documentElement.style.setProperty('--accent',color);
+  switch(state.tab){
+    case 'dashboard': el.innerHTML=renderDashboard(a,color);break;
+    case 'goals':     el.innerHTML=renderGoals(a,color);break;
+    case 'todos':     el.innerHTML=renderTodos(a,color);break;
+    case 'stats':     el.innerHTML=renderStatsBoth();break;
+    case 'motivation':el.innerHTML=renderMotivation(a,color);break;
+    case 'advice':    el.innerHTML=renderAdviceBoth();break;
+  }
+  attachListeners();updateBadge();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function renderDashboard(a,color){
+  const u=state.users[a],pName=state.names[1-a];
+  const perds=[{k:'day',l:'Bugün'},{k:'week',l:'Bu Hafta'},{k:'month',l:'Bu Ay'}];
+  let pcards='';
+  for(const {k,l} of perds){
+    const prev=state.todoPeriod;state.todoPeriod=k;const p=periodPct(a);state.todoPeriod=prev;
+    pcards+=`<div class="card" style="flex:1;text-align:center;padding:12px;margin-bottom:0">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${l}</div>${ringWidget(p,color,54,12)}</div>`;
+  }
+  const todayTodos=filterTodos(u.todos,'day').slice(0,4);
+  const activeGoals=u.goals.filter(g=>!isUpcoming(g)).slice(0,4);
+  const upcomingGoals=u.goals.filter(g=>isUpcoming(g)).slice(0,2);
+  const unread=u.motivations.filter(m=>!m.read).length;
+  let goalRows='';
+  for(const g of activeGoals){const p=goalPct(g);goalRows+=`<div style="margin-bottom:12px"><div class="row-between mb-8"><span style="font-size:13px">${g.title}</span><span style="font-size:12px;font-weight:700;color:${color}">${p}%</span></div>${bar(p,color)}</div>`;}
+  let upRows='';
+  for(const g of upcomingGoals){upRows+=`<div style="margin-bottom:8px;display:flex;align-items:center;gap:8px"><span style="font-size:13px">${g.title}</span><span class="upcoming-tag">⏳ ${fmtDate(g.startDate)}'de başlıyor</span></div>`;}
+  let todoRows='';
+  for(const t of todayTodos){const done=isTodoDoneForPeriod(t);todoRows+=`<div class="row gap-8" style="margin-bottom:8px"><span style="font-size:18px">${done?'✅':'⬜'}</span><span style="font-size:13px;color:${done?'var(--muted)':'var(--text)'};text-decoration:${done?'line-through':'none'}">${t.text}</span>${t.frequency&&t.frequency!=='once'?freqBadge(t.frequency):''}</div>`;}
+  return `<div style="display:flex;gap:10px;margin-bottom:14px">${pcards}</div>
+  <div class="card"><div class="row-between mb-12"><span class="card-title" style="margin:0">Aktif Hedefler</span><button class="btn btn-sm" style="background:${color};color:#fff" onclick="setTab('goals')">+ Ekle</button></div>${activeGoals.length?goalRows:'<div class="empty" style="padding:12px 0">Henüz hedef yok</div>'}${upRows?`<div style="border-top:1px solid var(--border);margin-top:8px;padding-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px">Yaklaşan</div>${upRows}`:''}</div>
+  <div class="card"><div class="row-between mb-12"><span class="card-title" style="margin:0">Bugünkü Görevler</span><button class="btn btn-sm" style="background:${color};color:#fff" onclick="setTab('todos')">+ Ekle</button></div>${todayTodos.length?todoRows:'<div class="empty" style="padding:12px 0">Bugün için görev yok</div>'}</div>
+  ${unread>0?`<div class="card" style="border-color:${color}60"><div style="font-size:13px;font-weight:700;color:${color};margin-bottom:8px">🔔 ${pName}'den ${unread} yeni mesaj!</div><button class="btn btn-sm" style="background:${color};color:#fff" onclick="setTab('motivation')">Gör</button></div>`:''}`;
+}
+
+// ── Goals ─────────────────────────────────────────────────────────────────────
+function renderGoals(a,color){
+  const u=state.users[a];
+  let html=`<div class="row-between mb-12" style="margin-top:2px"><span class="section-title" style="margin:0">Hedeflerim</span><button class="btn btn-sm" id="show-goal-form" style="background:${color};color:#fff">+ Yeni Hedef</button></div>
+  <div id="goal-form" style="display:none"><div class="card" style="border-color:${color}50;margin-bottom:14px">
+    <label class="field"><span>Hedef Adı</span><input class="inp" id="gf-title" placeholder="örn. 50 kitap oku"/></label>
+    <label class="field"><span>Kategori</span><select class="inp" id="gf-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></label>
+    <div class="col-2">
+      <label class="field"><span>Hedef Değer</span><input class="inp" id="gf-target" type="number" placeholder="100"/></label>
+      <label class="field"><span>Birim</span><input class="inp" id="gf-unit" placeholder="kitap / km…"/></label>
+    </div>
+    <div class="col-2">
+      <label class="field"><span>Başlangıç Tarihi</span><input class="inp" id="gf-start" type="date"/></label>
+      <label class="field"><span>Bitiş Tarihi</span><input class="inp" id="gf-deadline" type="date"/></label>
+    </div>
+    <label class="field" style="margin-bottom:14px"><span>Hatırlatıcı Bildirimi</span>
+      <div class="row gap-8" style="margin-top:6px"><input type="checkbox" id="gf-reminder" style="width:18px;height:18px;accent-color:${color}"/>
+      <span style="font-size:13px;color:var(--muted)">Başlangıç tarihinde bildirim gönder</span></div>
+    </label>
+    <div class="row gap-8 mt-8">
+      <button class="btn btn-sm" id="save-goal" style="background:${color};color:#fff">Kaydet</button>
+      <button class="btn btn-sm btn-outline" id="cancel-goal" style="border:1px solid var(--muted);color:var(--muted)">İptal</button>
+    </div>
+  </div></div>`;
+  const active=u.goals.filter(g=>!isUpcoming(g));
+  const upcoming=u.goals.filter(g=>isUpcoming(g));
+  if(!u.goals.length)html+=`<div class="empty">Henüz hedef yok.<br>İlk hedefini ekle!</div>`;
+  if(upcoming.length){
+    html+=`<div style="font-size:12px;font-weight:700;color:#F59E0B;margin-bottom:8px;margin-top:4px">⏳ Yaklaşan Hedefler</div>`;
+    for(const g of upcoming){html+=`<div class="card" style="border-color:#F59E0B40;opacity:.85"><div class="row-between mb-8"><div><div style="font-weight:700;margin-bottom:4px">${g.title}<span class="upcoming-tag">Başlangıç: ${fmtDate(g.startDate)}</span></div>${badge(g.category,color)}</div><button class="btn btn-sm btn-outline del-goal-btn" data-gid="${g.id}" style="border:1px solid var(--danger);color:var(--danger)">Sil</button></div><div style="font-size:12px;color:var(--muted)">${g.deadline?'Bitiş: '+fmtDate(g.deadline):''} ${g.reminder?'🔔 Bildirim ayarlı':''}</div></div>`;}
+    if(active.length)html+=`<div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;margin-top:4px">Aktif Hedefler</div>`;
+  }
+  for(const g of active){
+    const p=goalPct(g),total=(g.progress||[]).reduce((s,x)=>s+x.value,0);
+    html+=`<div class="card"><div class="row-between" style="margin-bottom:8px"><div><div style="font-weight:700;margin-bottom:4px">${g.title}</div><div>${badge(g.category,color)}${g.deadline?`<span style="font-size:10px;color:var(--muted);margin-left:8px">📅 ${fmtDate(g.deadline)}</span>`:''}</div></div><div style="text-align:right"><div style="font-size:26px;font-weight:900;color:${color};line-height:1">${p}%</div></div></div>${bar(p,color)}<div style="font-size:12px;color:var(--muted);margin:6px 0 12px">${total} / ${g.target} ${g.unit||''}</div>
+    <div class="row gap-8"><button class="btn btn-sm log-prog-btn" data-gid="${g.id}" style="background:${color};color:#fff">+ İlerleme</button><button class="btn btn-sm btn-outline del-goal-btn" data-gid="${g.id}" style="border:1px solid var(--danger);color:var(--danger)">Sil</button></div>
+    <div class="log-form row gap-8" id="logform-${g.id}" style="display:none;margin-top:10px"><input class="inp" id="logval-${g.id}" type="number" placeholder="Değer" style="flex:1"/><button class="btn btn-sm save-log-btn" data-gid="${g.id}" style="background:${color};color:#fff">Kaydet</button><button class="btn btn-sm cancel-log-btn btn-outline" data-gid="${g.id}" style="border:1px solid var(--muted);color:var(--muted)">İptal</button></div></div>`;
+  }
+  return html;
+}
+
+// ── Todos ─────────────────────────────────────────────────────────────────────
+function renderTodos(a,color){
+  const u=state.users[a],period=state.todoPeriod||'day';
+  const filtered=filterTodos(u.todos,period);
+  const done=filtered.filter(t=>isTodoDoneForPeriod(t)).length;
+  const pLabels={day:'Bugün',week:'Bu Hafta',month:'Bu Ay'};
+  const freqOpts=[{v:'once',l:'Tek Seferlik'},{v:'daily',l:'Her Gün'},{v:'weekly',l:'Her Hafta'},{v:'monthly',l:'Her Ay'}];
+  let html=`<div class="section-title">Yapılacaklar</div>
+  <div class="period-tabs">${['day','week','month'].map(p=>`<button class="period-tab${p===period?' active':''}" data-period="${p}" style="${p===period?`background:${color};color:#fff`:''}">${pLabels[p]}</button>`).join('')}</div>
+  <div class="card" style="margin-bottom:12px"><div style="font-size:13px;color:var(--muted);margin-bottom:2px">Tamamlanan</div><div style="font-size:26px;font-weight:900;color:${color};margin-bottom:8px">${done}/${filtered.length}</div>${bar(filtered.length?Math.round(done/filtered.length*100):0,color)}</div>
+  <div class="card" style="margin-bottom:12px">
+    <label class="field"><span>Yeni görev</span><input class="inp" id="todo-input" placeholder="Görev yaz, Enter ile ekle…" onkeydown="if(event.key==='Enter')addTodo()"/></label>
+    <label class="field"><span>Tekrar</span><select class="inp" id="todo-freq">${freqOpts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('')}</select></label>
+    ${u.goals.length?`<label class="field"><span>Hedefe bağla (opsiyonel)</span><select class="inp" id="todo-goal"><option value="">—</option>${u.goals.map(g=>`<option value="${g.id}">${g.title}</option>`).join('')}</select></label>`:''}
+    <button class="btn btn-sm" id="add-todo-btn" style="background:${color};color:#fff">Ekle</button>
+  </div>`;
+  if(!filtered.length)html+=`<div class="empty">Bu dönem için görev yok.</div>`;
+  for(const t of filtered){
+    const isDone=isTodoDoneForPeriod(t),linked=u.goals.find(g=>g.id===t.goalId);
+    html+=`<div class="todo-item"><button class="todo-check toggle-todo" data-tid="${t.id}" style="border-color:${isDone?color:'var(--border)'};background:${isDone?color:'transparent'};color:#fff">${isDone?'✓':''}</button>
+    <div style="flex:1"><div style="font-size:14px;color:${isDone?'var(--muted)':'var(--text)'};text-decoration:${isDone?'line-through':'none'}">${t.text}</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${linked?badge(linked.title,color):''}${freqBadge(t.frequency)}${t.frequency==='once'?`<span style="font-size:10px;color:var(--muted)">${t.date}</span>`:''}</div></div>
+    <button class="todo-del del-todo" data-tid="${t.id}">×</button></div>`;
+  }
+  return html;
+}
+
+// ── Stats (her iki kullanıcı) ─────────────────────────────────────────────────
+function renderStats(a,color){ return renderStatsBoth(); }
+function renderStatsBoth(){
+  const periods=[{k:'day',l:'Bugün'},{k:'week',l:'Bu Hafta'},{k:'month',l:'Bu Ay'}];
+  let html=`<div class="section-title">İstatistikler</div>`;
+  for(let ui=0;ui<2;ui++){
+    const color=COLORS[ui], name=state.names[ui], u=state.users[ui];
+    html+=`<div style="font-size:13px;font-weight:800;color:${color};margin:14px 0 8px;display:flex;align-items:center;gap:8px">
+      <span style="width:10px;height:10px;border-radius:50%;background:${color};display:inline-block"></span>${name}
+    </div>`;
+    // period rings
+    let pcards='';
+    for(const {k,l} of periods){
+      const prev=state.todoPeriod;state.todoPeriod=k;const p=periodPct(ui);state.todoPeriod=prev;
+      pcards+=`<div class="card" style="flex:1;text-align:center;padding:10px;margin-bottom:0">`+
+        `<div style="font-size:10px;color:var(--muted);margin-bottom:6px">${l}</div>`+
+        ringWidget(p,color,46,11)+`</div>`;
+    }
+    html+=`<div style="display:flex;gap:8px;margin-bottom:10px">${pcards}</div>`;
+    // 7 day chart
+    const last7=Array.from({length:7},(_,i)=>{
+      const d=new Date(),curDay=d.getDay(),mo=(curDay===0)?6:curDay-1;
+      d.setDate(d.getDate()-mo+i);
+      const key=d.toISOString().slice(0,10),day=u.todos.filter(t=>t.date===key&&t.frequency==='once');
+      return{lbl:d.toLocaleDateString('tr-TR',{weekday:'short'}),total:day.length,done:day.filter(t=>t.done).length};
+    });
+    let cols='';
+    for(const d of last7){const h=d.total?Math.max(8,Math.round(d.done/d.total*70)):5;cols+=`<div class="bar-col"><div class="bar-col-fill" style="height:${h}px;background:${d.total?color:'var(--border)'}"></div><span class="bar-col-lbl">${d.lbl}</span></div>`;}
+    html+=`<div class="card"><div class="card-title" style="font-size:13px">Son 7 Gün</div><div class="bar-chart">${cols}</div></div>`;
+    // goal details
+    const activeGoals=u.goals.filter(g=>!isUpcoming(g));
+    if(activeGoals.length){
+      let goalRows='';
+      for(const g of activeGoals){const p=goalPct(g),total=(g.progress||[]).reduce((s,x)=>s+x.value,0);goalRows+=`<div style="margin-bottom:12px"><div class="row-between mb-8"><div><span style="font-size:13px">${g.title}</span> ${badge(g.category,color)}</div><span style="font-weight:800;color:${color}">${p}%</span></div>${bar(p,color)}<div style="font-size:11px;color:var(--muted);margin-top:4px">${total} / ${g.target} ${g.unit||''}</div></div>`;}
+      html+=`<div class="card"><div class="card-title" style="font-size:13px">Hedefler</div>${goalRows}</div>`;
+    }
+  }
+  return html;
+}
+
+// ── Motivation ────────────────────────────────────────────────────────────────
+function renderMotivation(a,color){
+  const pColor=COLORS[1-a],pName=state.names[1-a],myMsgs=state.users[a].motivations;
+  const qBtns=QUICK_MSGS.map((q,i)=>`<button class="btn btn-sm quick-msg" data-idx="${i}" style="background:${pColor}15;border:1px solid ${pColor}40;color:${pColor}">${q}</button>`).join('');
+  let msgs='';
+  for(const m of [...myMsgs].reverse()){msgs+=`<div class="motiv-msg${m.read?'':' unread'}" style="${m.read?'':'border-color:'+color}"><div class="row-between mb-8"><span style="font-size:12px;font-weight:700;color:${color}">${m.from}</span><span style="font-size:11px;color:var(--muted)">${m.ts}</span></div><div style="font-size:14px;margin-bottom:10px">${m.text}</div><div class="row gap-8">${!m.read?`<button class="btn btn-sm mark-read" data-mid="${m.id}" style="background:${color};color:#fff">Okundu ✓</button>`:''}<button class="btn btn-sm btn-outline del-msg" data-mid="${m.id}" style="border:1px solid var(--muted);color:var(--muted)">Sil</button></div></div>`;}
+  return `<div class="section-title">Motivasyon</div>
+  <div class="card" style="border-color:${pColor}40;margin-bottom:16px"><div style="font-size:13px;color:var(--muted);margin-bottom:12px">📤 <strong>${pName}</strong>'e mesaj gönder</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${qBtns}</div><label class="field"><textarea class="inp" id="motiv-text" placeholder="Kendi mesajını yaz…"></textarea></label><button class="btn btn-sm" id="send-motiv" style="background:${pColor};color:#fff">Gönder</button></div>
+  <div style="font-weight:600;color:var(--muted);font-size:13px;margin-bottom:10px">Gelen Mesajlar</div>
+  ${myMsgs.length?msgs:'<div class="empty">Henüz mesaj almadın.</div>'}`;
+}
+
+// ── Advice (her iki kullanıcı) ────────────────────────────────────────────────
+function renderAdvice(a,color){ return renderAdviceBoth(); }
+function renderAdviceBoth(){
+  const a=state.active, color=COLORS[a];
+  const cat=state.adviceCat||'Film/Dizi';
+  const catTabs=ADVICE_CATS.map(c=>`<button class="cat-tab${c===cat?' active':''}" data-cat="${c}" style="${c===cat?`background:${color};color:#fff;border-color:${color}`:''}">${c}</button>`).join('');
+  const isPdf=cat==='Makale';
+  const icon={'Film/Dizi':'🎬',Kitap:'📚',Makale:'📄',Şarkı:'🎵',Diğer:'💡'};
+
+  let html=`<div class="section-title">Tavsiye Listesi</div>
+  <div class="cat-tabs">${catTabs}</div>
+  <div class="card" style="margin-bottom:14px;border-color:${color}40">
+    <div style="font-size:12px;font-weight:700;color:${color};margin-bottom:10px">+ Yeni ${cat} Ekle</div>
+    <label class="field"><span>${cat} Adı / Başlığı</span><input class="inp" id="adv-title" placeholder="${cat==='Film/Dizi'?'Film veya dizi adı':cat==='Kitap'?'Kitap adı ve yazar':cat==='Makale'?'Makale başlığı':cat==='Şarkı'?'Şarkı – Sanatçı':'Açıklama'}"/></label>
+    <label class="field"><span>Not (opsiyonel)</span><input class="inp" id="adv-note" placeholder="Neden öneriyorsun?"/></label>
+    ${isPdf?`<label class="field"><span>PDF Yükle (opsiyonel)</span><input type="file" id="adv-pdf" accept="application/pdf" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px"/></label>`:''}
+    <button class="btn btn-sm" id="add-adv-btn" style="background:${color};color:#fff">+ Ekle</button>
+  </div>`;
+
+  // Her iki kullanıcının tavsiyelerini göster
+  for(let ui=0;ui<2;ui++){
+    const uColor=COLORS[ui], uName=state.names[ui];
+    const items=state.users[ui].advice.filter(x=>x.cat===cat);
+    html+=`<div style="font-size:13px;font-weight:800;color:${uColor};margin:14px 0 8px;display:flex;align-items:center;gap:8px">
+      <span style="width:10px;height:10px;border-radius:50%;background:${uColor};display:inline-block"></span>${uName}'in Tavsiyeleri
+    </div>`;
+    if(!items.length){html+=`<div style="color:var(--muted);font-size:13px;padding:6px 0 12px">Henüz ${cat} tavsiyesi yok.</div>`;continue;}
+    for(const item of [...items].reverse()){
+      const canDelete = ui===a;
+      html+=`<div class="advice-item" style="border-left:3px solid ${uColor}">
+        <span style="font-size:22px;flex-shrink:0">${icon[item.cat]||'💡'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;margin-bottom:2px">${item.title}</div>
+          ${item.note?`<div style="font-size:12px;color:var(--muted)">${item.note}</div>`:''}
+          ${item.pdfData?`<a style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:${uColor};text-decoration:none;font-weight:600" href="${item.pdfData}" download="${item.title}.pdf">📎 PDF indir</a>`:''}
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${fmtDate(item.date)}</div>
+        </div>
+        ${canDelete?`<button class="advice-del del-adv-btn" data-aid="${item.id}">×</button>`:''}
+      </div>`;
+    }
+  }
+  return html;
+}
+
+
+// ── Listeners ─────────────────────────────────────────────────────────────────
+function attachListeners(){
+  const a=state.active;
+  const showBtn=document.getElementById('show-goal-form');
+  if(showBtn)showBtn.onclick=()=>{const f=document.getElementById('goal-form');f.style.display=f.style.display==='none'?'block':'none';if(f.style.display==='block'&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission();};
+  const cancelG=document.getElementById('cancel-goal');
+  if(cancelG)cancelG.onclick=()=>{document.getElementById('goal-form').style.display='none';};
+  const saveG=document.getElementById('save-goal');
+  if(saveG)saveG.onclick=async()=>{
+    const title=document.getElementById('gf-title').value.trim();
+    if(!title){toast('Hedef adı gerekli');return;}
+    const startDate=document.getElementById('gf-start').value;
+    const reminder=document.getElementById('gf-reminder').checked;
+    const goal={id:uid(),title,category:document.getElementById('gf-cat').value,target:Number(document.getElementById('gf-target').value)||100,unit:document.getElementById('gf-unit').value.trim(),startDate,deadline:document.getElementById('gf-deadline').value,reminder,progress:[]};
+    state.users[a].goals.push(goal);
+    await save();
+    if(reminder&&startDate){const start=new Date(startDate+'T08:00:00');const delay=start-new Date();if(delay>0&&Notification.permission==='granted')setTimeout(()=>new Notification(`🎯 Hedef başlıyor: ${goal.title}`,{body:`${state.names[a]}, bugün "${goal.title}" hedefin başlıyor! 💪`}),delay);}
+    toast('Hedef eklendi ✓');render();
+  };
+  document.querySelectorAll('.log-prog-btn').forEach(btn=>{btn.onclick=()=>{const f=document.getElementById('logform-'+btn.dataset.gid);f.style.display=f.style.display==='none'?'flex':'none';};});
+  document.querySelectorAll('.cancel-log-btn').forEach(btn=>{btn.onclick=()=>{document.getElementById('logform-'+btn.dataset.gid).style.display='none';};});
+  document.querySelectorAll('.save-log-btn').forEach(btn=>{btn.onclick=async()=>{const gid=btn.dataset.gid,val=Number(document.getElementById('logval-'+gid).value);if(!val){toast('Değer gir');return;}const g=state.users[a].goals.find(g=>g.id===gid);if(g){g.progress.push({value:val,date:today()});await save();toast('İlerleme kaydedildi ✓');render();}};});
+  document.querySelectorAll('.del-goal-btn').forEach(btn=>{btn.onclick=async()=>{state.users[a].goals=state.users[a].goals.filter(g=>g.id!==btn.dataset.gid);await save();toast('Hedef silindi');render();};});
+  document.querySelectorAll('.period-tab').forEach(t=>{t.onclick=()=>{state.todoPeriod=t.dataset.period;render();};});
+  window.addTodo=async()=>{const inp=document.getElementById('todo-input');const text=inp?.value.trim();if(!text)return;const freq=document.getElementById('todo-freq')?.value||'once';const goalSel=document.getElementById('todo-goal');state.users[a].todos.push({id:uid(),text,date:today(),done:false,frequency:freq,goalId:goalSel?.value||'',doneKeys:[]});await save();toast('Görev eklendi ✓');render();};
+  const addTodoBtn=document.getElementById('add-todo-btn');if(addTodoBtn)addTodoBtn.onclick=addTodo;
+  document.querySelectorAll('.toggle-todo').forEach(btn=>{btn.onclick=async()=>{const t=state.users[a].todos.find(t=>t.id===btn.dataset.tid);if(!t)return;if(t.frequency==='once'){t.done=!t.done;}else{const key=periodKey(t.frequency);if(!t.doneKeys)t.doneKeys=[];const idx=t.doneKeys.indexOf(key);if(idx>=0)t.doneKeys.splice(idx,1);else t.doneKeys.push(key);}await save();render();};});
+  document.querySelectorAll('.del-todo').forEach(btn=>{btn.onclick=async()=>{state.users[a].todos=state.users[a].todos.filter(t=>t.id!==btn.dataset.tid);await save();render();};});
+  document.querySelectorAll('.quick-msg').forEach(btn=>{btn.onclick=()=>{const ta=document.getElementById('motiv-text');if(ta)ta.value=QUICK_MSGS[btn.dataset.idx];};});
+  const sendBtn=document.getElementById('send-motiv');
+  if(sendBtn)sendBtn.onclick=async()=>{const ta=document.getElementById('motiv-text');const text=ta?.value.trim();if(!text){toast('Mesaj yaz!');return;}const partner=1-a;state.users[partner].motivations.push({id:uid(),from:state.names[a],text,ts:new Date().toLocaleString('tr-TR'),read:false});await save();toast('Mesaj gönderildi 🚀');if(ta)ta.value='';updateBadge();};
+  document.querySelectorAll('.mark-read').forEach(btn=>{btn.onclick=async()=>{const m=state.users[a].motivations.find(m=>m.id===btn.dataset.mid);if(m){m.read=true;await save();render();}};});
+  document.querySelectorAll('.del-msg').forEach(btn=>{btn.onclick=async()=>{state.users[a].motivations=state.users[a].motivations.filter(m=>m.id!==btn.dataset.mid);await save();render();};});
+  document.querySelectorAll('.cat-tab').forEach(tab=>{tab.onclick=()=>{state.adviceCat=tab.dataset.cat;render();};});
+  const addAdvBtn=document.getElementById('add-adv-btn');
+  if(addAdvBtn)addAdvBtn.onclick=()=>{
+    const title=document.getElementById('adv-title')?.value.trim();if(!title){toast('Başlık gir');return;}
+    const note=document.getElementById('adv-note')?.value.trim()||'',cat=state.adviceCat,pdfInput=document.getElementById('adv-pdf');
+    const finish=async(pdfData)=>{state.users[a].advice.push({id:uid(),cat,title,note,pdfData:pdfData||null,date:today()});await save();toast('Eklendi ✓');render();};
+    if(pdfInput&&pdfInput.files&&pdfInput.files[0]){const reader=new FileReader();reader.onload=ev=>finish(ev.target.result);reader.readAsDataURL(pdfInput.files[0]);}else finish(null);
+  };
+  document.querySelectorAll('.del-adv-btn').forEach(btn=>{btn.onclick=async()=>{state.users[a].advice=state.users[a].advice.filter(x=>x.id!==btn.dataset.aid);await save();render();};});
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+function normalizeState(s){
+  // Her zaman names sırası FIXED_NAMES sırasıyla aynı olsun: [Zehra, Merve]
+  if(!s||!s.names) return s;
+  const zi = s.names.indexOf('Zehra');
+  const mi = s.names.indexOf('Merve');
+  if(zi===0 && mi===1) return s; // zaten doğru
+  if(zi===1 && mi===0){
+    // ters — users'ı da ters çevir
+    s.names = ['Zehra','Merve'];
+    const tmp = s.users[0]; s.users[0] = s.users[1]; s.users[1] = tmp;
+  }
+  return s;
+}
+
+async function boot(){
+  loadLocal();
+  const myName = localStorage.getItem('progress_myname');
+  if(myName && state.names[0] && state.names[1]){
+    // Try to load from remote
+    try{
+      const remote=await dbGet();
+      if(remote&&remote.names&&remote.names[0]){state=normalizeState(remote);lastSyncHash=JSON.stringify(state);}
+    }catch(e){showSyncDot('🔴','Çevrimdışı');}
+    state=normalizeState(state);
+    state.active = state.names.indexOf(myName) >= 0 ? state.names.indexOf(myName) : 0;
+    if(!state.users[state.active].lastSeen) state.users[state.active].lastSeen = null;
+    state.users[state.active].lastSeen = new Date().toISOString();
+    saveLocal();
+    try { await dbSet(state); } catch(e){}
+    document.getElementById('setup-screen').style.display='none';
+    document.getElementById('main-app').style.display='block';
+    initApp();
+  }
+}
+boot();
+</script>
+</body>
+</html>
